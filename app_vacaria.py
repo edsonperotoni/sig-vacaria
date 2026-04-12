@@ -21,9 +21,14 @@ authenticator = stauth.Authenticate(
 )
 
 # 2. TELA DE LOGIN
-name, authentication_status, username = authenticator.login('Login', 'main')
+# Na versão nova, passamos apenas o local onde o formulário deve aparecer
+authentication_status = authenticator.login(location='main')
 
-if authentication_status:
+# O 'name' e o 'username' agora são pegos de dentro do objeto authenticator
+if st.session_state["authentication_status"]:
+    name = st.session_state["name"]
+    username = st.session_state["username"]
+    
     # --- TUDO DAQUI PARA BAIXO SÓ APARECE SE LOGAR ---
     authenticator.logout('Sair', 'sidebar')
     
