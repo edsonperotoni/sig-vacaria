@@ -35,7 +35,7 @@ if st.session_state["authentication_status"]:
     st.markdown(f"**Cartógrafo logado:** {st.session_state['username']}")
 
     # --- CONFIGURAÇÃO DOS DADOS ---
-    URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1NU5xpPUmBpw4Tgj9fsZDQ6HOkg3K_71I4Tr8bDNn8NI/edit?usp=sharing"
+    URL_PLANILHA = st.secrets["database"]["url_planilha"]
 
     def formatar_url_google_sheets(url):
         try:
