@@ -4,13 +4,11 @@ import folium
 from streamlit_folium import st_folium
 import pandas as pd
 
-# 1. CONFIGURAÇÃO DA PÁGINA (Sempre o primeiro comando Streamlit)
+# 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(layout="wide", page_title="SIG Colaborativo - Vacaria")
 
 # --- CONFIGURAÇÃO DE USUÁRIOS ---
-# Em vez de escrever as senhas aqui, pedimos ao Streamlit para buscar nos segredos
-# Em vez de passar o st.secrets direto, vamos converter para um dicionário comum (dict) - um xérox do conteúdo, para evitar problemas de tipo.
-# O segredo para a xerox funcionar 100% no Streamlit
+# Usamos o .to_dict() para garantir que os segredos sejam lidos como um dicionário comum
 config = st.secrets["credentials_config"].to_dict()
 
 authenticator = stauth.Authenticate(
@@ -21,20 +19,22 @@ authenticator = stauth.Authenticate(
 )
 
 # 2. TELA DE LOGIN
-# Na versão nova, passamos apenas o local onde o formulário deve aparecer
-authentication_status = authenticator.login(location='main')
+# O método login agora lida com o estado internamente
+authenticator.login(location='main')
 
-# O 'name' e o 'username' agora são pegos de dentro do objeto authenticator
+# --- VERIFICAÇÃO DE STATUS DE AUTENTICAÇÃO ---
 if st.session_state["authentication_status"]:
-    # --- TUDO DAQUI PARA BAIXO SÓ APARECE SE LOGAR ---
-    authenticator.logout('Sair', 'sidebar')
-    name = st.session_state["name"]
-    username = st.session_state["username"]
+    # SUCESSO: O usuário está logado
+    
+    # Barra lateral com Boas-vindas e Botão de Sair
+    with st.sidebar:
+        st.write(f"## Olá, {st.session_state['name']}!")
+        authenticator.logout('Sair do Sistema', 'button')
     
     st.title("🌎 Sistema de Informações Geográficas de Vacaria")
-    st.write(f"Bem-vindo, {name}! Você está acessando o mapa colaborativo.")
+    st.markdown(f"**Cartógrafo logado:** {st.session_state['username']}")
 
-    # --- CONFIGURAÇÃO DO DESENVOLVEDOR ---
+    # --- CONFIGURAÇÃO DOS DADOS ---
     URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1NU5xpPUmBpw4Tgj9fsZDQ6HOkg3K_71I4Tr8bDNn8NI/edit?usp=sharing"
 
     def formatar_url_google_sheets(url):
@@ -47,16 +47,16 @@ if st.session_state["authentication_status"]:
             return url
 
     try:
-        # 1. Leitura dos dados remotos
+        # 1. Leitura dos dados
         csv_url = formatar_url_google_sheets(URL_PLANILHA)
         df = pd.read_csv(csv_url)
 
-        # --- TRATAMENTO PARA PADRÃO BRASILEIRO (VÍRGULA PARA PONTO) ---
-        # Isso garante que se o pai digitar -28,50 ou -28.50, o Python entenda.
+        # 2. Tratamento de coordenadas (aceita vírgula e ponto)
         df['lat'] = df['lat'].astype(str).str.replace(',', '.').astype(float)
         df['lon'] = df['lon'].astype(str).str.replace(',', '.').astype(float)
 
-        # 2. Criação do Mapa
+        # 3. Criação do Mapa
+        # Centralizado em Vacaria/RS
         mapa = folium.Map(location=[-28.5085, -50.9333], zoom_start=14)
         
         folium.TileLayer(
@@ -65,15 +65,15 @@ if st.session_state["authentication_status"]:
             name='Google Satellite'
         ).add_to(mapa)
 
-        # 3. Distribuição dos pontos
+        # 4. Marcadores
         for _, row in df.iterrows():
             html_popup = f"""
             <div style='width: 200px; font-family: sans-serif;'>
                 <h4 style='margin:0 0 5px 0; color: #333;'>{row['nome']}</h4>
                 <img src="{row['foto']}" style="width:100%; border-radius:8px; display:block;">
                 <p style='font-size:11px; color:#666; margin-top:5px;'>
-                    <b>Latitude:</b> {row['lat']}<br>
-                    <b>Longitude:</b> {row['lon']}
+                    <b>Lat:</b> {row['lat']}<br>
+                    <b>Lon:</b> {row['lon']}
                 </p>
             </div>
             """
@@ -84,14 +84,15 @@ if st.session_state["authentication_status"]:
                 icon=folium.Icon(color=row['cor'], icon="map-marker", prefix="fa")
             ).add_to(mapa)
 
-        # Exibição
+        # Exibição do Mapa
         st_folium(mapa, width="100%", height=600)
-        st.info("💡 Para atualizar o mapa, basta editar a Planilha do Google e recarregar esta página.")
+        st.success("✅ Dados carregados com sucesso da planilha!")
 
     except Exception as e:
-        st.warning("🚀 Prontos para começar? Cole o link da planilha no código para visualizar os dados.")
+        st.error(f"Erro ao carregar dados: {e}")
+        st.warning("Verifique se a planilha tem as colunas: nome, lat, lon, foto, cor")
 
-elif authentication_status == False:
-    st.error('Usuário ou senha incorretos')
-elif authentication_status == None:
-    st.warning('Por favor, insira seu usuário e senha para acessar o mapa de Vacaria.')
+elif st.session_state["authentication_status"] is False:
+    st.error('Usuário ou senha incorretos.')
+elif st.session_state["authentication_status"] is None:
+    st.info('Por favor, utilize suas credenciais para acessar o SIG Vacaria.')
