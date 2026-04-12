@@ -26,11 +26,10 @@ authentication_status = authenticator.login(location='main')
 
 # O 'name' e o 'username' agora são pegos de dentro do objeto authenticator
 if st.session_state["authentication_status"]:
-    name = st.session_state["name"]
-    username = st.session_state["username"]
-    
     # --- TUDO DAQUI PARA BAIXO SÓ APARECE SE LOGAR ---
     authenticator.logout('Sair', 'sidebar')
+    name = st.session_state["name"]
+    username = st.session_state["username"]
     
     st.title("🌎 Sistema de Informações Geográficas de Vacaria")
     st.write(f"Bem-vindo, {name}! Você está acessando o mapa colaborativo.")
