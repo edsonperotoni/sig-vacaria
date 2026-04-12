@@ -10,7 +10,8 @@ st.set_page_config(layout="wide", page_title="SIG Colaborativo - Vacaria")
 # --- CONFIGURAÇÃO DE USUÁRIOS ---
 # Em vez de escrever as senhas aqui, pedimos ao Streamlit para buscar nos segredos
 # Em vez de passar o st.secrets direto, vamos converter para um dicionário comum (dict) - um xérox do conteúdo, para evitar problemas de tipo.
-config = dict(st.secrets["credentials_config"])
+# O segredo para a xerox funcionar 100% no Streamlit
+config = st.secrets["credentials_config"].to_dict()
 
 authenticator = stauth.Authenticate(
     config['credentials'],
