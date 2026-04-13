@@ -28,7 +28,7 @@ if st.session_state["authentication_status"]:
     
     # Barra lateral com Boas-vindas e Botão de Sair
     with st.sidebar:
-        st.write(f"## Olá, {st.session_state['name']}!")
+        st.write(f"## Olá, {st.session_state['name'].capitalize()}!")
         authenticator.logout(button_name='Sair do Sistema', location='sidebar')
     
     st.title("🌎 Sistema de Informações Geográficas de Vacaria")
