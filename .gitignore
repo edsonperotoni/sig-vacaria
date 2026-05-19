@@ -1,0 +1,25 @@
+# --- Segurança e Configurações Locais ---
+# NUNCA envie senhas, chaves de API e configurações locais para o GitHub
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# --- Ambiente Virtual ---
+# Não precisamos enviar os gigabytes de bibliotecas do ambiente virtual,
+# já que o requirements.txt reconstrói tudo.
+.venv/
+venv/
+ENV/
+
+# --- Arquivos Temporários do Python ---
+# Arquivos que o Python gera automaticamente ao rodar o código
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# --- Arquivos de Sistema e Gráficos Gerados ---
+# Evita enviar o arquivo .png que seu script gera localmente
+*.png
+.DS_Store
+Thumbs.db
